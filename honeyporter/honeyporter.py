@@ -28,7 +28,7 @@ server_ip_addr = "192.168.0.20"
 def debug_print(debug_string_array):
     """To show debug information"""
     if DEBUG_IS_ON:
-        print(' '.join(debug_string_array[0:]))
+        print(' '.join(str(debug_string_array[0:])))
 
 
 def write_csv(arrey_of_values, output_file):
