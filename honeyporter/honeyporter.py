@@ -8,6 +8,8 @@ import subprocess
 from datetime import datetime
 import csv
 
+DEBUG_IS_ON = True
+
 whitelist = []
 method = ""
 destination = ""
@@ -21,6 +23,13 @@ server_ip_addr = "192.168.0.20"
 # TODO: ability to provide IP ranges, CIRD ranges as whitelist, ranges for ports
 # TODO: if port is hit, turn on packet capturing
 
+
+def debug_print(debug_string_array):
+    """To show debug information"""
+    if DEBUG_IS_ON:
+        print(str('\n'.join(debug_string_array[0:])))
+
+
 def write_csv(arrey_of_values, output_file):
     '''
     for reusability
@@ -30,6 +39,7 @@ def write_csv(arrey_of_values, output_file):
     '''
     with open(output_file, 'a+', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
+        debug_print(["Writing to csv" + str(arrey_of_values)])
         writer.writerow(arrey_of_values)
 
 
@@ -37,6 +47,7 @@ def redirect_handler():
     global condition
     global ips_to_handle
     global redirected_file
+    debug_print(["Function: redirect handler"])
     while True:
 
         while ips_to_handle:
@@ -118,7 +129,10 @@ def redirect(client_ip, client_port):
     global ips_to_handle
     global condition
 
+    debug_print(["Function: redirect", client_ip, client_port])
+
     if client_ip in whitelist:
+        debug_print(["Whitelisted"])
         return
     # if redirected
     for ip_port in ips_to_handle:
@@ -126,9 +140,11 @@ def redirect(client_ip, client_port):
         # in redirect_handler function we are going to check whether an ip had been handled and if it was we are going
         # to throw it out, so no duplicate element is going to be handled
         if client_ip == ip_port[0]:
+            debug_print(["Already handled ip"])
             return
     else:
         ips_to_handle.append([client_ip, client_port])
+        debug_print(["Appended to the list"])
         with condition:
             condition.notify()
 
@@ -150,13 +166,14 @@ class ThreadedTestServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     def verify_request(self, request, client_address):
         c_ip, c_port = client_address
         redirect(c_ip, c_port)
+        debug_print(["Verify request:", c_ip, c_port])
         return False
 
 
 def ThreadedStartServer(host, port):
     server = ThreadedTestServer((host, port), ThreadedTestRequestHandler)
     s_ip, s_port = server.server_address  # find out what port we were given
-
+    debug_print(["ThreadedStartServer"])
     t = threading.Thread(target=server.serve_forever)
     t.setDaemon(False)  # don't hang on exit
     t.start()
@@ -222,10 +239,12 @@ if __name__ == '__main__':
         else:
             destination = args.destination[0]
 
+    debug_print([method, whitelist, redirected_file, port, destination])
 
     host = "localhost"
     for hport in port:
         ThreadedStartServer(host, int(hport))
+        debug_print(["Ports are opening"])
 
     # handling redirection in a single specific thread
     redirect_handler_thread = threading.Thread(target=redirect_handler)
