@@ -18,6 +18,7 @@ condition = threading.Condition()
 redirected_file = ''
 server_ip_addr = "192.168.0.20"
 
+
 # TODO: check on the live system
 # TODO: configure the code to be able to run on live system and execute commands
 # TODO: ability to provide IP ranges, CIRD ranges as whitelist, ranges for ports
@@ -27,7 +28,7 @@ server_ip_addr = "192.168.0.20"
 def debug_print(debug_string_array):
     """To show debug information"""
     if DEBUG_IS_ON:
-        print(str('\n'.join(debug_string_array[0:])))
+        print(' '.join(debug_string_array[0:]))
 
 
 def write_csv(arrey_of_values, output_file):
@@ -79,7 +80,7 @@ def redirect_handler():
                     break
                 commands.append("/sbin/iptables -t nat -A PREROUTING -s " + client_ip
                                 + " -j DNAT --to-destination " + str(destination_ip))
-                commands.append("/sbin/iptables -t -nat -A POSTROUTING -d "+str(destination_ip) +
+                commands.append("/sbin/iptables -t -nat -A POSTROUTING -d " + str(destination_ip) +
                                 " -j SNAT --to-source " + server_ip_addr)
             else:
                 print("failsafe_inside")
@@ -91,9 +92,10 @@ def redirect_handler():
                         if all_destination:
                             destination_ip = all_destination[0]
                             commands.append("/sbin/iptables -t nat -A PREROUTING -s " + client_ip
-                                            + " -j DNAT --to-destination "+str(destination_ip))
-                            commands.append("/sbin/iptables -t -nat -A POSTROUTING -d " + str(destination_ip)+" -j SNAT"
-                                            + "--to-source " + server_ip_addr)
+                                            + " -j DNAT --to-destination " + str(destination_ip))
+                            commands.append(
+                                "/sbin/iptables -t -nat -A POSTROUTING -d " + str(destination_ip) + " -j SNAT"
+                                + "--to-source " + server_ip_addr)
 
                         with open(destination, 'w+') as dest_file:
                             dest_file.write('\n'.join(all_destination[1:]))
@@ -193,8 +195,10 @@ if __name__ == '__main__':
 
     meg_Port.add_argument("-p", "--port", action='store', help="Port to use as honeyport", nargs=1)
 
-    meg_Destination.add_argument("-d", "--destination", action='store', help="List of destination IPs. Separated with new line. "
-                                                            "Without it the tool just blocks.", nargs=1)
+    meg_Destination.add_argument("-d", "--destination", action='store', help="List of destination IPs. "
+                                                                             "Separated with new line. "
+                                                                             "Without it the tool just blocks.",
+                                 nargs=1)
 
     parser.add_argument("-m", "--method", action='store', nargs='?', default='block', const='block',
                         choices=('block', 'failsafe_block', 'failsafe_wait', 'fix_redirect'),
@@ -202,6 +206,8 @@ if __name__ == '__main__':
                              "if no target in the file. failsafe_wait redirects if there is a target and waits in a loop"
                              "if there is no target in the file. fix_redirects uses the same destination for all"
                              "redirection")
+
+    parser.add_argument("--ip", action='store', nargs=1, help="IP address of the server", required=True)
 
     args = parser.parse_args()
 
@@ -225,7 +231,6 @@ if __name__ == '__main__':
     # 3: Redirected
     redirected_file = args.redirected[0]
 
-
     # 4: Port
     with open(args.port[0]) as f:
         port = f.read().splitlines()
@@ -239,9 +244,12 @@ if __name__ == '__main__':
         else:
             destination = args.destination[0]
 
-    debug_print([method, whitelist, redirected_file, port, destination])
+    debug_print([method, redirected_file, destination])
+    debug_print(port)
+    debug_print(whitelist)
 
-    host = "localhost"
+    host = args.ip[0]
+    debug_print(["Host:", host])
     for hport in port:
         ThreadedStartServer(host, int(hport))
         debug_print(["Ports are opening"])
