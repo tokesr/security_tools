@@ -80,7 +80,7 @@ def redirect_handler():
                     break
                 commands.append("/sbin/iptables -t nat -A PREROUTING -s " + client_ip
                                 + " -j DNAT --to-destination " + str(destination_ip))
-                commands.append("/sbin/iptables -t -nat -A POSTROUTING -d " + str(destination_ip) +
+                commands.append("/sbin/iptables -t nat -A POSTROUTING -d " + str(destination_ip) +
                                 " -j SNAT --to-source " + server_ip_addr)
             else:
                 print("failsafe_inside")
@@ -94,7 +94,7 @@ def redirect_handler():
                             commands.append("/sbin/iptables -t nat -A PREROUTING -s " + client_ip
                                             + " -j DNAT --to-destination " + str(destination_ip))
                             commands.append(
-                                "/sbin/iptables -t -nat -A POSTROUTING -d " + str(destination_ip) + " -j SNAT"
+                                "/sbin/iptables -t nat -A POSTROUTING -d " + str(destination_ip) + " -j SNAT"
                                 + "--to-source " + server_ip_addr)
 
                         with open(destination, 'w+') as dest_file:
