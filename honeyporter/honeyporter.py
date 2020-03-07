@@ -99,9 +99,11 @@ def redirect_handler():
                     except Exception as e:
                         print("type error: " + str(e))
                         break
-
-            for com in commands:
-                subprocess.call(com, shell=True)
+            try:
+                for com in commands:
+                    subprocess.call(com, shell=True)
+            except Exception as e:
+                print("Subprocess call error: " + str(e))
             write_csv([datetime.timestamp(datetime.now()), client_ip,
                        client_port, destination_ip, method], redirected_file)
 
@@ -208,7 +210,7 @@ if __name__ == '__main__':
 
 
     # 4: Port
-    with open(args.P[0]) as f:
+    with open(args.port[0]) as f:
         port = f.read().splitlines()
 
     # 5:  Destination
