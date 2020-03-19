@@ -16,19 +16,20 @@ destination = ""
 ips_to_handle = []
 condition = threading.Condition()
 redirected_file = ''
-server_ip_addr = "192.168.0.20"
+server_ip_addr = ""
 
 
-# TODO: check on the live system
-# TODO: configure the code to be able to run on live system and execute commands
 # TODO: ability to provide IP ranges, CIRD ranges as whitelist, ranges for ports
 # TODO: if port is hit, turn on packet capturing
-
+# TODO: logging
 
 def debug_print(debug_string_array):
     """To show debug information"""
-    if DEBUG_IS_ON:
-        print(' '.join(str(debug_string_array[0:])))
+    try:
+        if DEBUG_IS_ON:
+            print(' '.join(str(debug_string_array[0:])))
+    except:
+        pass
 
 
 def write_csv(arrey_of_values, output_file):
@@ -38,6 +39,7 @@ def write_csv(arrey_of_values, output_file):
     :param output_file: path of the output file
     :return: none
     '''
+
     with open(output_file, 'a+', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
         debug_print(["Writing to csv" + str(arrey_of_values)])
@@ -248,10 +250,10 @@ if __name__ == '__main__':
     debug_print(port)
     debug_print(whitelist)
 
-    host = args.ip[0]
-    debug_print(["Host:", host])
+    server_ip_addr = args.ip[0]
+    debug_print(["Host:", server_ip_addr])
     for hport in port:
-        ThreadedStartServer(host, int(hport))
+        ThreadedStartServer(server_ip_addr, int(hport))
         debug_print(["Ports are opening"])
 
     # handling redirection in a single specific thread
