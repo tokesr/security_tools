@@ -116,7 +116,7 @@ def redirect_handler():
                         break
             try:
                 for com in commands:
-                    #subprocess.call(com, shell=True)
+                    subprocess.call(com, shell=True)
                     with open('output.sh','a+') as out:
                     	out.write(str(com)+'\n')
             except Exception as e:
